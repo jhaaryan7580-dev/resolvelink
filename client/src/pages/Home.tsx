@@ -2,12 +2,14 @@ import { useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
+  Check,
   CheckCircle2,
   CircleDot,
   Database,
   FileSearch,
   MapPin,
   Network,
+  PhoneCall,
   Send,
   Sparkles,
 } from "lucide-react";
@@ -43,23 +45,20 @@ function GraphView({
     graph.nodes.map((node: any) => [node.id, node])
   );
   return (
-    <div
-      className="graph-canvas"
-      aria-label="ResolveLink connected issue graph"
-    >
+    <div className="graph-canvas" aria-label="ResolveLink connection map">
       <svg
         viewBox="0 0 1140 540"
         role="img"
-        aria-label="Interactive connected graph of the new report, location, prior reports, repairs, contractor, safety incident, and department"
+        aria-label="Interactive connection map showing how the report links to history, repairs, a contractor, a safety incident, and the responsible team"
       >
         {graph.edges.map((edge: any) => {
           const source = nodeById[edge.source];
           const target = nodeById[edge.target];
           if (!source || !target) return null;
-          const mx = (source.x + target.x) / 2;
-          const my = (source.y + target.y) / 2;
           const selectedPath =
             edge.source === selectedId || edge.target === selectedId;
+          const mx = (source.x + target.x) / 2;
+          const my = (source.y + target.y) / 2;
           return (
             <g key={edge.id}>
               <line
@@ -117,12 +116,11 @@ export default function Home() {
   const [reportText, setReportText] = useState(examples[0]);
   const [withGraph, setWithGraph] = useState(true);
   const [selectedNodeId, setSelectedNodeId] = useState("contractor-urbanworks");
-  const [cypherMode, setCypherMode] = useState<"context" | "fakeClosure">(
-    "fakeClosure"
-  );
+  const [showTechnical, setShowTechnical] = useState(false);
+  const [location, setLocation] = useState("HSR Layout · Road segment F-27");
   const analysis = analyze.data ?? scenario.data;
 
-  if (!analysis) {
+  if (!analysis)
     return (
       <main className="resolve-shell">
         <div className="page-wrap">
@@ -138,13 +136,12 @@ export default function Home() {
         </div>
       </main>
     );
-  }
 
-  const submit = () => analyze.mutate({ message: reportText });
+  const submit = () =>
+    analyze.mutate({ message: `${reportText} at ${location}` });
   const selectedNode =
     analysis.graph.nodes.find((node: any) => node.id === selectedNodeId) ??
     analysis.graph.nodes[0];
-  const cypher = analysis.cypher[cypherMode];
 
   return (
     <main className="resolve-shell">
@@ -155,47 +152,90 @@ export default function Home() {
             RESOLVELINK
           </div>
           <div className="top-status">
-            <span className="status-dot" /> <span>{analysis.graphMode}</span>
+            <span className="status-dot" />
+            <span>Bengaluru demo</span>
             <span>·</span>
-            <span>Graph-first resolution</span>
+            <span>Citizen + resolver view</span>
           </div>
         </header>
 
         <section className="hero">
           <div>
-            <p className="eyebrow">
-              From repeated reports to resolved problems
-            </p>
+            <p className="eyebrow">A clearer path from report to resolution</p>
             <h1>
-              Reports alone don’t fix places.
+              Tell us what happened.
               <br />
-              Connections do.
+              We’ll connect the dots.
             </h1>
           </div>
           <p className="hero-copy">
-            ResolveLink traces the history behind a problem, surfaces repeated
-            failures, and sends the next action to the right owner—with visible
-            evidence.
+            ResolveLink helps people report a problem once—and helps the team
+            responsible see the full history before deciding what to do next.
           </p>
         </section>
 
         <div className="notice">
-          <strong>Demo data is synthetic and transparent.</strong> This planted
-          scenario proves a road stretch was closed twice by the same
-          contractor, then reported again through explicit{" "}
-          <span className="mono">REPORTED_AFTER</span> relationships. Aura mode
-          executes the same Cypher paths against live graph data.
+          <strong>How this demo works:</strong> your report is matched to a
+          small, transparent Bengaluru demo graph. The numbers below are
+          synthetic: <b>5 linked reports</b>, <b>2 past repairs</b>, and{" "}
+          <b>1 safety incident</b>.
         </div>
 
         <section className="workspace">
           <aside className="intake-pane">
-            <p className="section-kicker">01 / Issue intake</p>
-            <h2>Report what you see.</h2>
+            <div className="step-heading">
+              <span>01</span>
+              <div>
+                <p className="section-kicker">Choose the place</p>
+                <h2>Where is the problem?</h2>
+              </div>
+            </div>
             <p className="small-copy">
-              This focused demo is seeded around road segment F-27. Describe the
-              failure naturally; ResolveLink extracts the signal and retrieves
-              its connected history.
+              We start with a place because problems become meaningful when they
+              are connected to the same spot over time.
             </p>
+            <div className="location-fields">
+              <label>
+                <span>Country</span>
+                <select defaultValue="India">
+                  <option>India</option>
+                  <option disabled>Other countries — coming soon</option>
+                </select>
+              </label>
+              <label>
+                <span>State</span>
+                <select defaultValue="Karnataka">
+                  <option>Karnataka</option>
+                  <option disabled>Other states — coming soon</option>
+                </select>
+              </label>
+              <label>
+                <span>City</span>
+                <select defaultValue="Bengaluru">
+                  <option>Bengaluru</option>
+                  <option disabled>Other cities — coming soon</option>
+                </select>
+              </label>
+              <label>
+                <span>Area</span>
+                <select
+                  value={location}
+                  onChange={event => setLocation(event.target.value)}
+                >
+                  <option>HSR Layout · Road segment F-27</option>
+                  <option>HSR Layout · Sector 2</option>
+                  <option disabled>More Bengaluru areas — coming soon</option>
+                </select>
+              </label>
+            </div>
+
+            <div className="step-heading report-heading">
+              <span>02</span>
+              <div>
+                <p className="section-kicker">Describe the problem</p>
+                <h2>What did you notice?</h2>
+              </div>
+            </div>
             <textarea
               className="report-box"
               value={reportText}
@@ -223,11 +263,11 @@ export default function Home() {
             >
               {analyze.isPending ? (
                 <>
-                  <Sparkles size={15} /> Building graph context…
+                  <Sparkles size={15} /> Connecting your report…
                 </>
               ) : (
                 <>
-                  <Send size={15} /> Connect report to resolution history{" "}
+                  <Send size={15} /> See what your report connects to{" "}
                   <ArrowRight size={15} />
                 </>
               )}
@@ -242,28 +282,28 @@ export default function Home() {
             )}
 
             <div className="extraction">
-              <p className="section-kicker">Structured intake</p>
+              <p className="section-kicker">What ResolveLink heard</p>
               <div className="extraction-grid">
                 <div className="field">
-                  <span className="field-label">Issue type</span>
+                  <span className="field-label">Issue</span>
                   <span className="field-value">
                     {analysis.intake.issueType}
                   </span>
                 </div>
                 <div className="field">
-                  <span className="field-label">Location entity</span>
+                  <span className="field-label">Place</span>
                   <span className="field-value">
                     {analysis.intake.location}
                   </span>
                 </div>
                 <div className="field">
-                  <span className="field-label">Urgency cue</span>
+                  <span className="field-label">Urgency</span>
                   <span className="field-value">
                     {analysis.intake.severity}
                   </span>
                 </div>
                 <div className="field">
-                  <span className="field-label">Safety signal</span>
+                  <span className="field-label">Safety</span>
                   <span
                     className={`field-value ${analysis.intake.safetyRisk ? "field-risk" : ""}`}
                   >
@@ -273,13 +313,13 @@ export default function Home() {
                   </span>
                 </div>
                 <div className="field">
-                  <span className="field-label">Time context</span>
+                  <span className="field-label">When</span>
                   <span className="field-value">
                     {analysis.intake.timeContext}
                   </span>
                 </div>
                 <div className="field">
-                  <span className="field-label">Parser confidence</span>
+                  <span className="field-label">Confidence</span>
                   <span className="field-value">
                     {analysis.intake.confidence}%
                   </span>
@@ -291,59 +331,159 @@ export default function Home() {
           <div className="analysis-pane">
             <div className="analysis-header">
               <div>
-                <p className="section-kicker">02 / Resolution intelligence</p>
-                <h2>This is a recurring failure, not a new ticket.</h2>
+                <p className="section-kicker">03 / What we found</p>
+                <h2>Your report is part of a bigger story.</h2>
+                <p className="analysis-subtitle">
+                  This is why the system raised the case to{" "}
+                  <strong>{analysis.priority}</strong>.
+                </p>
               </div>
               <div className="priority-stamp">
                 PRIORITY<b>{analysis.priority}</b>
               </div>
             </div>
-            <div className="score-strip">
-              <div className="score-item">
-                <span className="score-label">Connected reports</span>
-                <span className="score-value">{analysis.relatedReports}</span>
+
+            <div className="plain-reason">
+              <div className="reason-score">
+                <span className="score-label">Priority score</span>
+                <strong>
+                  {analysis.score}
+                  <small>/100</small>
+                </strong>
               </div>
-              <div className="score-divider" />
-              <div className="score-item">
-                <span className="score-label">Recurrence window</span>
-                <span className="score-value">
-                  {analysis.recurrenceDays} days
+              <div className="reason-copy">
+                <strong>The graph changed the decision.</strong>
+                <span>
+                  It found connected history that a single ticket would miss.
                 </span>
               </div>
-              <div className="score-divider" />
-              <div className="score-item">
-                <span className="score-label">Priority score</span>
-                <span className="score-value orange">{analysis.score}/100</span>
+            </div>
+
+            <div className="connection-story">
+              <p className="evidence-title">
+                <Network
+                  size={13}
+                  style={{ verticalAlign: "-2px", marginRight: 5 }}
+                />{" "}
+                How your report became critical
+              </p>
+              <div className="story-grid">
+                <div className="story-card">
+                  <span className="story-number">1</span>
+                  <div>
+                    <strong>Your report → the same place</strong>
+                    <span>
+                      Connected to {analysis.relatedReports} reports near{" "}
+                      {analysis.graph.nodes.find(
+                        (node: any) => node.id === "location-f27"
+                      )?.label ?? "this location"}
+                      .
+                    </span>
+                  </div>
+                </div>
+                <div className="story-card">
+                  <span className="story-number">2</span>
+                  <div>
+                    <strong>That place → repair history</strong>
+                    <span>
+                      {analysis.fakeClosure.closures} repairs were marked closed
+                      by {analysis.fakeClosure.contractor}.
+                    </span>
+                  </div>
+                </div>
+                <div className="story-card">
+                  <span className="story-number">3</span>
+                  <div>
+                    <strong>Repair → later report</strong>
+                    <span>
+                      New reports came back after the repairs. The issue was not
+                      truly resolved.
+                    </span>
+                  </div>
+                </div>
+                <div className="story-card">
+                  <span className="story-number">4</span>
+                  <div>
+                    <strong>History → right next action</strong>
+                    <span>
+                      A safety incident means this needs permanent repair, not
+                      another routine ticket.
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="status-card">
+              <div className="status-card-head">
+                <div>
+                  <p className="section-kicker">Your report is being tracked</p>
+                  <h3>Resolution trail · {analysis.complaintId}</h3>
+                </div>
+                <span className="status-live">LIVE DEMO STATUS</span>
+              </div>
+              <div className="status-line">
+                <div className="status-step complete">
+                  <span>
+                    <Check size={13} />
+                  </span>
+                  <strong>Reported</strong>
+                  <small>Just now</small>
+                </div>
+                <div className="status-step complete">
+                  <span>
+                    <Check size={13} />
+                  </span>
+                  <strong>Connected</strong>
+                  <small>{analysis.relatedReports} related reports</small>
+                </div>
+                <div className="status-step complete">
+                  <span>
+                    <Check size={13} />
+                  </span>
+                  <strong>Prioritized</strong>
+                  <small>
+                    {analysis.priority} · {analysis.score}/100
+                  </small>
+                </div>
+                <div className="status-step current">
+                  <span>4</span>
+                  <strong>Routed</strong>
+                  <small>{analysis.actionOwner}</small>
+                </div>
               </div>
             </div>
 
             <section className="graph-section">
               <div className="graph-caption">
-                <h3>
-                  <Network
-                    size={15}
-                    style={{
-                      verticalAlign: "-3px",
-                      marginRight: 6,
-                      color: "#c2412d",
-                    }}
-                  />
-                  Retrieved subgraph
-                </h3>
+                <div>
+                  <h3>
+                    <Network
+                      size={15}
+                      style={{
+                        verticalAlign: "-3px",
+                        marginRight: 6,
+                        color: "#c2412d",
+                      }}
+                    />
+                    Connection map
+                  </h3>
+                  <span className="graph-helper">
+                    Circles are things. Lines are relationships. Click a circle
+                    to see what it means.
+                  </span>
+                </div>
                 <div className="graph-legend">
-                  <span className="legend-line" /> click any node to inspect its
-                  path
+                  <span className="legend-line" /> retrieved path
                 </div>
               </div>
               <GraphView
                 graph={analysis.graph}
-                selectedId={selectedNodeId}
+                selectedId={selectedNode.id}
                 onSelect={setSelectedNodeId}
               />
               <div className="selected-node-note">
-                <span className="mono">
-                  SELECTED {selectedNode.kind.toUpperCase()}
-                </span>
+                <span className="mono">YOU ARE EXPLORING</span>
                 <strong>{selectedNode.label}</strong>
                 <span>{selectedNode.detail}</span>
               </div>
@@ -356,7 +496,7 @@ export default function Home() {
                     size={13}
                     style={{ verticalAlign: "-2px", marginRight: 5 }}
                   />{" "}
-                  Why this score
+                  Evidence used
                 </p>
                 {analysis.evidence.map((item, index) => (
                   <div className="evidence-row" key={item.label}>
@@ -386,32 +526,31 @@ export default function Home() {
                   </p>
                 </div>
               </div>
-
               <div className="memory-pane">
                 <p className="memory-title">
                   <CircleDot
                     size={13}
                     style={{ verticalAlign: "-2px", marginRight: 5 }}
                   />{" "}
-                  Follow-up memory mode
+                  Follow-up memory
                 </p>
+                <p className="followup">“{analysis.followUp.message}”</p>
                 <div className="toggle-row">
                   <button
                     type="button"
                     className={`toggle-btn ${!withGraph ? "active" : ""}`}
                     onClick={() => setWithGraph(false)}
                   >
-                    Without graph
+                    Basic reply
                   </button>
                   <button
                     type="button"
                     className={`toggle-btn ${withGraph ? "active" : ""}`}
                     onClick={() => setWithGraph(true)}
                   >
-                    With graph
+                    Connected reply
                   </button>
                 </div>
-                <p className="followup">“{analysis.followUp.message}”</p>
                 <div className={`memory-answer ${withGraph ? "graph-on" : ""}`}>
                   {withGraph
                     ? analysis.followUp.withGraph
@@ -419,41 +558,46 @@ export default function Home() {
                 </div>
                 <p className="memory-note">
                   {withGraph
-                    ? "The answer is grounded in the retrieved complaint → location → repair → contractor → incident path."
-                    : "A standard ticket response cannot see the connected repair history."}
+                    ? "This reply remembers what happened after earlier repairs."
+                    : "Without connected history, the reply can only acknowledge the new message."}
                 </p>
+                <div className="contact-card">
+                  <div className="contact-icon">
+                    <PhoneCall size={15} />
+                  </div>
+                  <div>
+                    <span className="field-label">Follow-up route</span>
+                    <strong>{analysis.actionOwner}</strong>
+                    <span>Responsible team linked from the area graph.</span>
+                  </div>
+                </div>
               </div>
             </section>
 
-            <section className="cypher-panel">
-              <div className="cypher-head">
-                <p className="cypher-title">
-                  <Database
-                    size={13}
-                    style={{ verticalAlign: "-2px", marginRight: 5 }}
-                  />
-                  {cypher.title}
-                </p>
-                <span className="cypher-tag">Neo4j Cypher</span>
-              </div>
-              <div className="cypher-tabs">
-                <button
-                  type="button"
-                  className={cypherMode === "fakeClosure" ? "active" : ""}
-                  onClick={() => setCypherMode("fakeClosure")}
-                >
-                  Repeat-after-closure
-                </button>
-                <button
-                  type="button"
-                  className={cypherMode === "context" ? "active" : ""}
-                  onClick={() => setCypherMode("context")}
-                >
-                  Context retrieval
-                </button>
-              </div>
-              <pre>{cypher.query}</pre>
-            </section>
+            <div className="technical-toggle">
+              <button
+                type="button"
+                onClick={() => setShowTechnical(!showTechnical)}
+              >
+                <Database size={13} />{" "}
+                {showTechnical
+                  ? "Hide technical details"
+                  : "For builders: show how Neo4j powers this"}
+              </button>
+              {showTechnical && (
+                <div className="technical-panel">
+                  <p>
+                    <strong>Graph implementation:</strong> Neo4j connects the
+                    report to the location, previous reports, closed repairs,
+                    contractor, safety incident, and responsible department. The
+                    repeat-after-closure query uses explicit{" "}
+                    <span className="mono">REPORTED_AFTER</span> relationships
+                    rather than guessing from text.
+                  </p>
+                  <pre>{analysis.cypher.fakeClosure.query}</pre>
+                </div>
+              )}
+            </div>
           </div>
         </section>
 
@@ -467,8 +611,7 @@ export default function Home() {
                 color: "#27835c",
               }}
             />
-            One submitted report becomes a connected, explainable resolution
-            decision.
+            One report. One connected history. A clearer next action.
           </span>
           <span className="mono">
             {analysis.complaintId} · {analysis.graphMode} · ResolveLink
