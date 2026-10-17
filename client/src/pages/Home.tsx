@@ -5,7 +5,9 @@ import {
   Check,
   CheckCircle2,
   CircleDot,
+  Copy,
   Database,
+  ExternalLink,
   FileSearch,
   MapPin,
   Network,
@@ -19,6 +21,30 @@ const examples = [
   "A delivery rider slipped near Road segment F-27. It is still dangerous.",
   "Another large pothole has opened again at Road segment F-27.",
   "The temporary patch near Road segment F-27 failed again.",
+];
+
+const authorityChannels = [
+  {
+    name: "BBMP civic helpline",
+    detail: "Primary Bengaluru complaint route",
+    value: "1533",
+    href: "tel:1533",
+    kind: "Call",
+  },
+  {
+    name: "Namma Bengaluru / Sahaaya 2.0",
+    detail: "Register and track civic grievances",
+    value: "Open portal",
+    href: "https://nammabengaluru.org.in/",
+    kind: "Official portal",
+  },
+  {
+    name: "Karnataka Praja Seve",
+    detail: "State-level escalation and tracking",
+    value: "1902",
+    href: "tel:1902",
+    kind: "Call",
+  },
 ];
 
 const kindColors: Record<string, string> = {
@@ -118,6 +144,7 @@ export default function Home() {
   const [selectedNodeId, setSelectedNodeId] = useState("contractor-urbanworks");
   const [showTechnical, setShowTechnical] = useState(false);
   const [location, setLocation] = useState("HSR Layout · Road segment F-27");
+  const [briefCopied, setBriefCopied] = useState(false);
   const analysis = analyze.data ?? scenario.data;
 
   if (!analysis)
@@ -142,6 +169,16 @@ export default function Home() {
   const selectedNode =
     analysis.graph.nodes.find((node: any) => node.id === selectedNodeId) ??
     analysis.graph.nodes[0];
+  const copyFollowUpBrief = async () => {
+    const brief = `ResolveLink follow-up brief\nCase: ${analysis.complaintId}\nLocation: ${analysis.intake.location}\nIssue: ${analysis.intake.issueType}\nPriority: ${analysis.priority} (${analysis.score}/100)\nEvidence: ${analysis.relatedReports} related reports, ${analysis.fakeClosure.closures} repeat closures by ${analysis.fakeClosure.contractor}, ${analysis.evidence[3]?.label ?? "linked safety evidence"}\nRecommended action: ${analysis.recommendation}`;
+    try {
+      await navigator.clipboard.writeText(brief);
+      setBriefCopied(true);
+      window.setTimeout(() => setBriefCopied(false), 2200);
+    } catch {
+      setBriefCopied(false);
+    }
+  };
 
   return (
     <main className="resolve-shell">
@@ -570,6 +607,50 @@ export default function Home() {
                     <strong>{analysis.actionOwner}</strong>
                     <span>Responsible team linked from the area graph.</span>
                   </div>
+                </div>
+                <div className="authority-box">
+                  <div className="authority-heading">
+                    <span className="field-label">
+                      Official channels for this Bengaluru demo
+                    </span>
+                    <span className="verified-label">VERIFIED ROUTES</span>
+                  </div>
+                  {authorityChannels.map(channel => (
+                    <a
+                      className="authority-link"
+                      href={channel.href}
+                      target={
+                        channel.href.startsWith("http") ? "_blank" : undefined
+                      }
+                      rel={
+                        channel.href.startsWith("http")
+                          ? "noreferrer"
+                          : undefined
+                      }
+                      key={channel.name}
+                    >
+                      <span>
+                        <strong>{channel.name}</strong>
+                        <small>{channel.detail}</small>
+                      </span>
+                      <b>{channel.value}</b>
+                      <ExternalLink size={12} />
+                    </a>
+                  ))}
+                  <button
+                    type="button"
+                    className="copy-brief"
+                    onClick={copyFollowUpBrief}
+                  >
+                    <Copy size={12} />{" "}
+                    {briefCopied
+                      ? "Follow-up brief copied"
+                      : "Copy evidence brief before you contact them"}
+                  </button>
+                  <p className="source-note">
+                    Routes: BBMP 1533 · Namma Bengaluru / Sahaaya 2.0 ·
+                    Karnataka Praja Seve 1902.
+                  </p>
                 </div>
               </div>
             </section>

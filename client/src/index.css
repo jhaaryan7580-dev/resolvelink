@@ -1086,3 +1086,79 @@ h1 {
     display: none;
   }
 }
+
+.authority-box {
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid #cbb59c;
+  background: #f4e8d8;
+}
+.authority-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.verified-label {
+  color: #27835c;
+  font:
+    500 8px "DM Mono",
+    monospace;
+  letter-spacing: 0.06em;
+}
+.authority-link {
+  display: grid;
+  grid-template-columns: 1fr auto 14px;
+  gap: 8px;
+  align-items: center;
+  padding: 9px 0;
+  border-top: 1px dashed #d2bfa7;
+  color: #3f3329;
+  text-decoration: none;
+}
+.authority-link:hover {
+  color: #bd3e2b;
+}
+.authority-link strong,
+.authority-link small {
+  display: block;
+}
+.authority-link strong {
+  font-size: 10px;
+}
+.authority-link small {
+  margin-top: 2px;
+  color: #806d5d;
+  font-size: 9px;
+}
+.authority-link b {
+  color: #b6402d;
+  font:
+    700 11px "DM Mono",
+    monospace;
+  white-space: nowrap;
+}
+.authority-link svg {
+  color: #9e8065;
+}
+.copy-brief {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 7px;
+  padding: 8px 9px;
+  border: 1px solid #c49c7a;
+  background: #fff7eb;
+  color: #8d482f;
+  font-size: 9px;
+}
+.copy-brief:hover {
+  background: #fffdf7;
+}
+.source-note {
+  margin: 8px 0 0;
+  color: #8c7662;
+  font-size: 8px;
+  line-height: 1.4;
+}

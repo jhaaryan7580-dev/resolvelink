@@ -28,6 +28,7 @@ This is the decision path behind ResolveLink’s recommendation. The same answer
 
 - [`docs/graph-model.md`](docs/graph-model.md) explains the graph model and planted story.
 - [`scripts/seed-resolvelink.cypher`](scripts/seed-resolvelink.cypher) seeds an Aura/Neo4j Browser database and contains the fake-closure query.
+- [`docs/authority-channels.md`](docs/authority-channels.md) documents the official BBMP, Sahaaya 2.0, and Karnataka Praja Seve routes used in the citizen action panel.
 - [`server/resolveGraph.ts`](server/resolveGraph.ts) is the Cypher-oriented graph access boundary. It uses `neo4j-driver` with Aura credentials and a clearly labeled synthetic fallback for a no-credential demo.
 
 ## Run locally
