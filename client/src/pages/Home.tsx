@@ -191,7 +191,7 @@ export default function Home() {
           <div className="topbar">
             <div className="brand">
               <span className="brand-mark" />
-              RESOLVELINK
+              ResolveLINK
             </div>
           </div>
           <div style={{ padding: "64px 0" }}>
@@ -232,7 +232,7 @@ export default function Home() {
         <header className="topbar">
           <div className="brand">
             <span className="brand-mark" />
-            RESOLVELINK
+            ResolveLINK
           </div>
           <div className="top-status">
             <span className="status-dot" />
