@@ -13,6 +13,7 @@ The prototype was built for the **Neo4j Graph Builder Build Sprint Bengaluru**. 
 3. Neo4j retrieves the connected subgraph around the report: earlier complaints, repair history, contractor, incident, and department.
 4. The UI explains the named factors in the critical-priority score, exposes the recurrence/fake-closure pattern, and recommends the next action.
 5. Switch **Follow-up memory mode** from “Without graph” to “With graph” to compare a generic reply to an answer grounded in retrieved graph context.
+6. Use the top-right prototype profile selector to preview three future roles: **Citizen** for reporting and progress, **Fix authority** for status updates and closure evidence, and **Opportunity** for vetted jobs or contract work. These are product prototypes, not live verified accounts yet.
 
 ## Why Neo4j is essential
 
@@ -56,6 +57,10 @@ First run `scripts/seed-resolvelink.cypher` in Aura Query or Neo4j Browser. With
 ## Tech stack
 
 React, TypeScript, Express, tRPC, Neo4j JavaScript Driver, Neo4j Cypher, and a Neo4j Aura-ready repository boundary.
+
+## Prototype roles and verification boundary
+
+ResolveLink keeps identity and permissions intentionally lightweight for the hackathon prototype. The top-right role selector previews the product contract without pretending to authenticate anyone: citizens report and track progress; fix authorities would later mark work started, post updates, and provide closure evidence; opportunity providers would later publish jobs or contract work after verification. A production release would add verified identity, role-based permissions, moderation, and an auditable link between official work updates and the graph.
 
 ## Safe demo-data note
 

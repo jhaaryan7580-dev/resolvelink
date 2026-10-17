@@ -1162,3 +1162,130 @@ h1 {
   font-size: 8px;
   line-height: 1.4;
 }
+
+.profile-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 6px;
+  padding-left: 10px;
+  border-left: 1px solid #d1c0aa;
+}
+.profile-picker > span {
+  color: #8a7562;
+  font:
+    500 8px "DM Mono",
+    monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.profile-picker select {
+  border: 1px solid #c3aa8f;
+  padding: 5px 7px;
+  color: #5a4638;
+  background: #fff8ed;
+  font:
+    500 10px "Noto Sans",
+    sans-serif;
+}
+.profile-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 13px 16px;
+  border: 1px solid #cfbda5;
+  background: #fff7eb;
+}
+.profile-banner-copy {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.profile-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 50px;
+  color: #fff8ee;
+  background: #c2412d;
+  font:
+    700 9px "DM Mono",
+    monospace;
+}
+.profile-banner-copy strong,
+.profile-banner-copy span {
+  display: block;
+}
+.profile-banner-copy strong {
+  color: #3d3027;
+  font-size: 12px;
+}
+.profile-banner-copy div > span {
+  margin-top: 2px;
+  color: #7e6b5a;
+  font-size: 10px;
+}
+.profile-banner-action {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+.profile-banner-action button {
+  border: 1px solid #c2412d;
+  padding: 7px 10px;
+  color: #a23929;
+  background: #fff7eb;
+  font-size: 10px;
+  font-weight: 700;
+}
+.profile-banner-action button:hover {
+  color: #fff8ee;
+  background: #c2412d;
+}
+.profile-banner-action small {
+  color: #8b7765;
+  font:
+    9px "DM Mono",
+    monospace;
+}
+.profile-authority {
+  border-left: 4px solid #275a78;
+}
+.profile-authority .profile-badge {
+  background: #275a78;
+}
+.profile-opportunity {
+  border-left: 4px solid #5f7452;
+}
+.profile-opportunity .profile-badge {
+  background: #5f7452;
+}
+@media (max-width: 800px) {
+  .top-status {
+    gap: 6px;
+  }
+  .profile-picker {
+    margin-left: 0;
+    padding-left: 6px;
+  }
+  .profile-banner {
+    align-items: start;
+    flex-direction: column;
+  }
+  .profile-banner-action {
+    justify-items: start;
+  }
+}
+@media (max-width: 600px) {
+  .top-status > span:nth-of-type(3) {
+    display: none;
+  }
+  .profile-picker > span {
+    display: none;
+  }
+}

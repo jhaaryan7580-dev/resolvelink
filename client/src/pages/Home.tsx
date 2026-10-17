@@ -47,6 +47,35 @@ const authorityChannels = [
   },
 ];
 
+type ProfileId = "citizen" | "authority" | "opportunity";
+
+const profiles: Record<
+  ProfileId,
+  { label: string; title: string; description: string; action: string }
+> = {
+  citizen: {
+    label: "Citizen",
+    title: "Citizen view",
+    description:
+      "Report an issue, see why it was prioritized, and follow its progress.",
+    action: "Start a report",
+  },
+  authority: {
+    label: "Fix authority",
+    title: "Fix authority view",
+    description:
+      "A future verified authority can mark work started, post updates, and close the loop with evidence.",
+    action: "Mark work as started",
+  },
+  opportunity: {
+    label: "Opportunity",
+    title: "Opportunity view",
+    description:
+      "A future verified provider can see approved work and post jobs or contract opportunities.",
+    action: "Preview an opportunity",
+  },
+};
+
 const kindColors: Record<string, string> = {
   complaint: "#C2412D",
   location: "#4A7569",
@@ -145,6 +174,10 @@ export default function Home() {
   const [showTechnical, setShowTechnical] = useState(false);
   const [location, setLocation] = useState("HSR Layout · Road segment F-27");
   const [briefCopied, setBriefCopied] = useState(false);
+  const [profile, setProfile] = useState<ProfileId>("citizen");
+  const [roleStatus, setRoleStatus] = useState(
+    "Prototype mode — verification will be added later."
+  );
   const analysis = analyze.data ?? scenario.data;
 
   if (!analysis)
@@ -190,9 +223,21 @@ export default function Home() {
           </div>
           <div className="top-status">
             <span className="status-dot" />
-            <span>Bengaluru demo</span>
+            <span>Neo4j graph active</span>
             <span>·</span>
-            <span>Citizen + resolver view</span>
+            <span>12 nodes · 14 relationships</span>
+            <label className="profile-picker">
+              <span>View as</span>
+              <select
+                value={profile}
+                onChange={event => setProfile(event.target.value as ProfileId)}
+                aria-label="Choose prototype profile"
+              >
+                <option value="citizen">Citizen</option>
+                <option value="authority">Fix authority</option>
+                <option value="opportunity">Opportunity</option>
+              </select>
+            </label>
           </div>
         </header>
 
@@ -216,6 +261,33 @@ export default function Home() {
           small, transparent Bengaluru demo graph. The numbers below are
           synthetic: <b>5 linked reports</b>, <b>2 past repairs</b>, and{" "}
           <b>1 safety incident</b>.
+        </div>
+
+        <div className={`profile-banner profile-${profile}`}>
+          <div className="profile-banner-copy">
+            <span className="profile-badge">{profiles[profile].label}</span>
+            <div>
+              <strong>{profiles[profile].title}</strong>
+              <span>{profiles[profile].description}</span>
+            </div>
+          </div>
+          <div className="profile-banner-action">
+            <button
+              type="button"
+              onClick={() =>
+                setRoleStatus(
+                  profile === "citizen"
+                    ? "Citizen report flow is ready below."
+                    : profile === "authority"
+                      ? "Prototype update queued locally — verified authority workflows come next."
+                      : "Prototype opportunity preview queued locally — provider verification comes next."
+                )
+              }
+            >
+              {profiles[profile].action}
+            </button>
+            <small>{roleStatus}</small>
+          </div>
         </div>
 
         <section className="workspace">
