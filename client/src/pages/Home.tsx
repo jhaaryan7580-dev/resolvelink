@@ -236,9 +236,16 @@ export default function Home() {
           </div>
           <div className="top-status">
             <span className="status-dot" />
-            <span>Neo4j graph active</span>
+            <span>
+              {analysis.graphMode === "Neo4j Aura"
+                ? "Live Neo4j Aura"
+                : "Synthetic graph fallback"}
+            </span>
             <span>·</span>
-            <span>12 nodes · 14 relationships</span>
+            <span>
+              {analysis.graph.nodes.length} nodes ·{" "}
+              {analysis.graph.edges.length} relationships
+            </span>
             <label className="profile-picker">
               <span>View as</span>
               <select
