@@ -166,7 +166,11 @@ function GraphView({
 }
 
 export default function Home() {
-  const scenario = trpc.resolve.scenario.useQuery();
+  const scenario = trpc.resolve.scenario.useQuery(undefined, {
+    retry: 3,
+    retryDelay: attempt => Math.min(500 * 2 ** attempt, 2000),
+    refetchOnWindowFocus: false,
+  });
   const analyze = trpc.resolve.analyze.useMutation();
   const [reportText, setReportText] = useState(examples[0]);
   const [withGraph, setWithGraph] = useState(true);
@@ -190,9 +194,18 @@ export default function Home() {
               RESOLVELINK
             </div>
           </div>
-          <p style={{ padding: "64px 0" }}>
-            Loading the connected issue graph…
-          </p>
+          <div style={{ padding: "64px 0" }}>
+            <p>Connecting to the issue graph…</p>
+            {scenario.isError && (
+              <button
+                className="reconnect-btn"
+                type="button"
+                onClick={() => scenario.refetch()}
+              >
+                Reconnect graph
+              </button>
+            )}
+          </div>
         </div>
       </main>
     );

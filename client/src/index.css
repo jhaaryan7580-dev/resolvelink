@@ -1398,3 +1398,16 @@ h1 {
     transition-duration: 0.001ms !important;
   }
 }
+
+.reconnect-btn {
+  border: 1px solid #c2412d;
+  padding: 8px 11px;
+  color: #a1392b;
+  background: #fff8ed;
+  font-size: 11px;
+  font-weight: 700;
+}
+.reconnect-btn:hover {
+  color: #fff8ed;
+  background: #c2412d;
+}
