@@ -3,7 +3,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
-import { getGraphRepository, initialDemoAnalysis } from "./resolveGraph";
+import { getGraphRepository, getInitialDemoScenario } from "./resolveGraph";
 
 export const appRouter = router({
   system: systemRouter,
@@ -17,7 +17,7 @@ export const appRouter = router({
     }),
   }),
   resolve: router({
-    scenario: publicProcedure.query(() => initialDemoAnalysis),
+    scenario: publicProcedure.query(() => getInitialDemoScenario()),
     analyze: publicProcedure
       .input(z.object({ message: z.string().trim().min(8).max(800) }))
       .mutation(async ({ input }) =>

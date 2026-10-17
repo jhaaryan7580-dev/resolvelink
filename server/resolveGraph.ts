@@ -92,6 +92,19 @@ RETURN contractor.name AS contractor,
        count(DISTINCT repair) AS repeatClosures,
        collect(DISTINCT repeat.id) AS reReportedComplaintIds
 ORDER BY repeatClosures DESC`,
+  demoContext: `// Read the seed graph without creating a new complaint on page load
+MATCH (location:Location {id: 'loc-f27'})
+OPTIONAL MATCH (prior:Complaint)-[:LOCATED_AT]->(location)
+OPTIONAL MATCH (prior)-[:HAS_REPAIR]->(repair:RepairAttempt)-[:PERFORMED_BY]->(contractor:Contractor)
+OPTIONAL MATCH (prior)-[:HAS_INCIDENT]->(incident:SafetyIncident)
+OPTIONAL MATCH (location)-[:IN_AREA]->(:Area)-[:OWNED_BY]->(department:Department)
+RETURN 'CMP-LIVE-DEMO' AS complaintId,
+       location.name AS locationName,
+       count(DISTINCT prior) AS relatedReports,
+       count(DISTINCT repair) AS repairCount,
+       count(DISTINCT incident) AS incidentCount,
+       coalesce(head(collect(DISTINCT contractor.name)), 'Unassigned contractor') AS contractor,
+       coalesce(head(collect(DISTINCT department.name)), 'Unassigned') AS actionOwner`,
 };
 
 const graphNodes: GraphNode[] = [
@@ -534,6 +547,73 @@ export class Neo4jGraphRepository implements GraphRepository {
     );
   }
 
+  private contextFromRecords(
+    contextRecord:
+      | Awaited<
+          ReturnType<ReturnType<Driver["session"]>["run"]>
+        >["records"][number]
+      | undefined,
+    recurrenceRecord:
+      | Awaited<
+          ReturnType<ReturnType<Driver["session"]>["run"]>
+        >["records"][number]
+      | undefined,
+    complaintId: string,
+    fallbackLocation: string
+  ): GraphContext {
+    return {
+      complaintId: String(contextRecord?.get("complaintId") ?? complaintId),
+      locationName: String(
+        contextRecord?.get("locationName") ?? fallbackLocation
+      ),
+      relatedReports: toNumber(contextRecord?.get("relatedReports")),
+      repairCount: toNumber(contextRecord?.get("repairCount")),
+      incidentCount: toNumber(contextRecord?.get("incidentCount")),
+      contractor: String(
+        recurrenceRecord?.get("contractor") ??
+          contextRecord?.get("contractor") ??
+          toStrings(contextRecord?.get("contractors"))[0] ??
+          "Unassigned contractor"
+      ),
+      fakeClosures: toNumber(recurrenceRecord?.get("repeatClosures")),
+      actionOwner: String(contextRecord?.get("actionOwner") ?? "Unassigned"),
+    };
+  }
+
+  async demoScenario(): Promise<ResolutionAnalysis> {
+    const session = this.driver.session({
+      database: process.env.NEO4J_DATABASE || "neo4j",
+    });
+    try {
+      const contextResult = await session.run(CYPHER.demoContext);
+      const recurrenceResult = await session.run(CYPHER.fakeClosure);
+      const context = this.contextFromRecords(
+        contextResult.records[0],
+        recurrenceResult.records[0],
+        "CMP-LIVE-DEMO",
+        "Road segment F-27, Sector 2"
+      );
+      if (!context.relatedReports)
+        throw new Error(
+          "Aura seed graph is empty or the demo location is missing"
+        );
+      return buildAnalysis(
+        "A delivery rider slipped near Road segment F-27. It is still dangerous.",
+        "Neo4j Aura",
+        context
+      );
+    } catch (error) {
+      console.error(
+        "[ResolveLink] Aura demo read failed; using synthetic fallback:",
+        error instanceof Error ? error.message : error
+      );
+      return initialDemoAnalysis;
+    } finally {
+      await session.close();
+      await this.driver.close();
+    }
+  }
+
   async analyze(message: string): Promise<ResolutionAnalysis> {
     const intake = extractFields(message);
     const complaintId = `CMP-${Date.now().toString().slice(-6)}`;
@@ -549,29 +629,23 @@ export class Neo4jGraphRepository implements GraphRepository {
         issueType: intake.issueType,
         severity: intake.severity,
       });
-      const [contextResult, recurrenceResult] = await Promise.all([
-        session.run(CYPHER.retrieveContext, { complaintId }),
-        session.run(CYPHER.fakeClosure),
-      ]);
-      const contextRecord = contextResult.records[0];
-      const recurrenceRecord = recurrenceResult.records[0];
-      const context: GraphContext = {
-        complaintId: String(contextRecord?.get("complaintId") ?? complaintId),
-        locationName: String(
-          contextRecord?.get("locationName") ?? intake.location
-        ),
-        relatedReports: toNumber(contextRecord?.get("relatedReports")),
-        repairCount: toNumber(contextRecord?.get("repairCount")),
-        incidentCount: toNumber(contextRecord?.get("incidentCount")),
-        contractor: String(
-          recurrenceRecord?.get("contractor") ??
-            toStrings(contextRecord?.get("contractors"))[0] ??
-            "Unassigned contractor"
-        ),
-        fakeClosures: toNumber(recurrenceRecord?.get("repeatClosures")),
-        actionOwner: String(contextRecord?.get("actionOwner") ?? "Unassigned"),
-      };
+      const contextResult = await session.run(CYPHER.retrieveContext, {
+        complaintId,
+      });
+      const recurrenceResult = await session.run(CYPHER.fakeClosure);
+      const context = this.contextFromRecords(
+        contextResult.records[0],
+        recurrenceResult.records[0],
+        complaintId,
+        intake.location
+      );
       return buildAnalysis(message, "Neo4j Aura", context);
+    } catch (error) {
+      console.error(
+        "[ResolveLink] Aura write/read failed; using synthetic fallback:",
+        error instanceof Error ? error.message : error
+      );
+      return buildAnalysis(message, "Synthetic demo graph", seededContext);
     } finally {
       await session.close();
       await this.driver.close();
@@ -586,6 +660,17 @@ export function getGraphRepository(): GraphRepository {
       process.env.NEO4J_PASSWORD
   );
   return configured ? new Neo4jGraphRepository() : new DemoGraphRepository();
+}
+
+export async function getInitialDemoScenario(): Promise<ResolutionAnalysis> {
+  const configured = Boolean(
+    process.env.NEO4J_URI &&
+      process.env.NEO4J_USERNAME &&
+      process.env.NEO4J_PASSWORD
+  );
+  return configured
+    ? new Neo4jGraphRepository().demoScenario()
+    : initialDemoAnalysis;
 }
 
 export const initialDemoAnalysis = buildAnalysis(

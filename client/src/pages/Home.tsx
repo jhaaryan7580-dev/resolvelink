@@ -243,7 +243,7 @@ export default function Home() {
             </span>
             <span>·</span>
             <span>
-              {analysis.graph.nodes.length} nodes ·{" "}
+              {analysis.graph.nodes.length} nodes visualized ·{" "}
               {analysis.graph.edges.length} relationships
             </span>
             <label className="profile-picker">
@@ -277,10 +277,24 @@ export default function Home() {
         </section>
 
         <div className="notice">
-          <strong>How this demo works:</strong> your report is matched to a
-          small, transparent Bengaluru demo graph. The numbers below are
-          synthetic: <b>5 linked reports</b>, <b>2 past repairs</b>, and{" "}
-          <b>1 safety incident</b>.
+          <strong>
+            {analysis.graphMode === "Neo4j Aura"
+              ? "Live Aura graph:"
+              : "How this demo works:"}
+          </strong>{" "}
+          {analysis.graphMode === "Neo4j Aura" ? (
+            <>
+              this is a live Neo4j Aura read of the seeded Bengaluru demo:{" "}
+              <b>{analysis.relatedReports} linked reports</b>,{" "}
+              <b>2 past repairs</b>, and <b>1 safety incident</b>.
+            </>
+          ) : (
+            <>
+              your report is matched to a small, transparent Bengaluru demo
+              graph. The numbers below are synthetic: <b>5 linked reports</b>,{" "}
+              <b>2 past repairs</b>, and <b>1 safety incident</b>.
+            </>
+          )}
         </div>
 
         <div className={`profile-banner profile-${profile}`}>

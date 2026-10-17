@@ -12,10 +12,12 @@ MERGE (incident:SafetyIncident {id: 'incident-018', type: 'Rider fall', occurred
 MERGE (c1:Complaint {id: 'CMP-401', status: 'CLOSED', reportedAt: date('2026-09-29'), summary: 'Deep pothole near bus stop'})
 MERGE (c2:Complaint {id: 'CMP-407', status: 'RE_REPORTED', reportedAt: date('2026-10-03'), summary: 'Pothole reopened after closure'})
 MERGE (c3:Complaint {id: 'CMP-416', status: 'RE_REPORTED', reportedAt: date('2026-10-08'), summary: 'Unsafe road surface for two-wheelers'})
+MERGE (c4:Complaint {id: 'CMP-421', status: 'OPEN', reportedAt: date('2026-10-11'), summary: 'Water collecting in the same road depression'})
+MERGE (c5:Complaint {id: 'CMP-424', status: 'OPEN', reportedAt: date('2026-10-13'), summary: 'Pothole still dangerous for riders at night'})
 MERGE (r1:RepairAttempt {id: 'REP-91', status: 'CLOSED', closedAt: date('2026-10-01'), closureType: 'Temporary patch'})
 MERGE (r2:RepairAttempt {id: 'REP-103', status: 'CLOSED', closedAt: date('2026-10-06'), closureType: 'Temporary patch'})
 
-FOREACH (complaint IN [c1, c2, c3] | MERGE (complaint)-[:ABOUT]->(issue) MERGE (complaint)-[:LOCATED_AT]->(location))
+FOREACH (complaint IN [c1, c2, c3, c4, c5] | MERGE (complaint)-[:ABOUT]->(issue) MERGE (complaint)-[:LOCATED_AT]->(location))
 MERGE (c1)-[:HAS_REPAIR]->(r1)-[:PERFORMED_BY]->(contractor)
 MERGE (c2)-[:REPORTED_AFTER]->(r1)
 MERGE (c2)-[:HAS_REPAIR]->(r2)-[:PERFORMED_BY]->(contractor)
