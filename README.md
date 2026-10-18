@@ -4,6 +4,10 @@
 
 ResolveLink is a graph-powered issue intelligence prototype that turns a natural-language report into an explainable resolution recommendation. Instead of treating a pothole, water leak, safety hazard, or repeated service failure as an isolated ticket, it connects the report to prior complaints, locations, repair attempts, contractors, safety incidents, and responsible departments.
 
+## Live Demo
+
+https://civicfix-xjqeqrvi.manus.space
+
 The prototype was built for the **Neo4j Graph Builder Build Sprint Bengaluru**. Its seeded demo story is deliberately transparent: a road stretch was closed twice by the same contractor, then reported again. The product detects that recurring pattern and recommends escalation for permanent repair rather than creating one more routine ticket.
 
 ## Demo flow
